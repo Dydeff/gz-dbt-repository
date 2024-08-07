@@ -35,4 +35,4 @@ models:
     mart:
       +materialized: table  # Applies to all models under models/mart/
       finance:
-         schema: mart
+         schema: finance
