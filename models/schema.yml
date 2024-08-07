@@ -3,14 +3,54 @@ version: 2
 sources:
   - name: raw
     schema: gz_raw_data
-    description: "Raw data source"
+    description: "Raw data source containing information on sales, products, and shipping."
     tables:
       - name: sales
-        description: "Table containing sales data"
+        description: "Table containing sales data, including order details and amounts."
         identifier: raw_gz_sales
+        columns:
+          - name: date_date
+            description: "Date when the sale occurred."
+          - name: orders_id
+            description: "Unique ID of the order."
+          - name: pdt_id
+            description: "ID of the product sold. (Note: This column will be renamed to products_id in the staging model.)"
+          - name: revenue
+            description: "Total amount of the sale for this order."
+          - name: quantity
+            description: "Quantity of products sold in this order."
+        freshness:
+           warn_after: {count: 90, period: day}
+        loaded_at_field: "CAST(date_date as TIMESTAMP)"
+        tests:
+          - unique:
+              column_name: "(orders_id || '-' || pdt_id)"
+          
+       
       - name: product
-        description: "Table containing product data"
+        description: "Table containing product information, including purchase prices."
         identifier: raw_gz_product
+        columns:
+          - name: products_id
+            description: "Unique ID of the product."
+            tests:
+              - unique
+              - not_null
+
+          - name: purchSE_PRICE
+            description: "Purchase price of the product. (Note: This column will be renamed to purchase_price in the staging model.)"
+
       - name: ship
-        description: "Table containing shipping data"
+        description: "Table containing shipping fees associated with orders."
         identifier: raw_gz_ship
+        columns:
+          - name: orders_id
+            description: "Unique ID of the order associated with the shipment."
+          - name: shipping_fee
+            description: "Shipping fee charged for the order."
+          - name: shipping_fee_1
+            description: "Alternate shipping fee column. (Decide to keep this column or shipping_fee in the staging model.)"
+          - name: logCost
+            description: "Logistics cost associated with the shipment."
+          - name: ship_cost
+            description: "Total shipping cost."
